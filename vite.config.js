@@ -9,8 +9,13 @@ export default defineConfig({
     react(),
   ],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './SRC'),
-    },
+    alias: [
+      { find: /^@\/components/, replacement: path.resolve(__dirname, './SRC/Component') },
+      { find: /^@\/Component/, replacement: path.resolve(__dirname, './SRC/Component') },
+      { find: /^@\/libs/, replacement: path.resolve(__dirname, './SRC/libs') },
+      { find: /^@\/lib/, replacement: path.resolve(__dirname, './SRC/libs') },
+      { find: /^@\/hooks/, replacement: path.resolve(__dirname, './SRC/hooks') },
+      { find: '@', replacement: path.resolve(__dirname, './SRC') },
+    ],
   },
 });
