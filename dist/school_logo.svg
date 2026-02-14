@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <style>
+      .bg { fill: #00b4a0; }
+      .text { fill: #ffffff; font: bold 64px sans-serif; }
+    </style>
+  </defs>
+  <circle class="bg" cx="64" cy="64" r="56"/>
+  <text class="text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle">S</text>
+</svg>
