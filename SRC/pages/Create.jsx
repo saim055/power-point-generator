@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
+import { base44 } from '../API/base44Client';
 import FileUploader from '@/Component/upload/FileUploader';
 import ContentEditor from '@/Component/editor/ContentEditor';
 import PresentationViewer from '@/Component/Presentation/PresentationViewer';
