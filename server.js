@@ -66,10 +66,11 @@ const upload = multer({
   }
 });
 
-// Ensure directories exist
-['uploads', 'downloads'].forEach(dir => {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-});
+// Ensure directories exist (use absolute paths under __dirname)
+const uploadsDir = path.join(__dirname, 'uploads');
+const downloadsDir = path.join(__dirname, 'downloads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir, { recursive: true });
 
 // Base44 API Endpoints
 app.post('/api/apps/public/prod/public-settings/by-id/:appId', (req, res) => {
@@ -280,7 +281,7 @@ app.post('/api/generate-ppt', async (req, res) => {
     });
 
     const fileName = `lesson_${Date.now()}.pptx`;
-    const filePath = path.join(__dirname, 'downloads', fileName);
+    const filePath = path.join(downloadsDir, fileName);
     await pptx.writeFile({ fileName: filePath });
     
     const baseUrl = `${req.protocol}://${req.headers.host}`;
@@ -290,7 +291,8 @@ app.post('/api/generate-ppt', async (req, res) => {
   }
 });
 
-app.use('/downloads', express.static('downloads'));
+// Serve downloads from absolute path
+app.use('/downloads', express.static(downloadsDir));
 
 // Serve built frontend in production if available
 const distPath = path.join(__dirname, 'dist');
