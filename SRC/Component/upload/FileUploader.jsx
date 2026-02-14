@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Upload, FileText, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { base44 } from '@/api/base44Client';
+import { base44 } from '../API/base44Client';
 
 export default function FileUploader({ onExtracted, onError }) {
   const [isDragging, setIsDragging] = useState(false);
