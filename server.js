@@ -416,7 +416,7 @@ function normalizeLessonData(data) {
     if (diffMatch) {
       const idx = diffMatch.index;
       const before = objText.slice(0, idx).trim();
-      const after = objText.slice(idx).trim();
+      const after = objText.slice(idx + diffMatch[0].length).trim();
       if (!out.success_criteria || String(out.success_criteria).trim().length < 10) {
         out.success_criteria = after;
       }
@@ -440,7 +440,15 @@ function normalizeLessonData(data) {
     }
   }
 
-  // 2) Clean keywords: cut off resources/links and URLs
+  // 2) Clean success criteria heading
+  if (out.success_criteria) {
+    let sc = String(out.success_criteria).trim();
+    sc = sc.replace(/^Differentiated lesson outcomes?:\s*/i, '');
+    sc = sc.replace(/^Differentiated outcomes?:\s*/i, '');
+    out.success_criteria = sc.trim();
+  }
+
+  // 3) Clean keywords: cut off resources/links and URLs
   if (out.keywords) {
     let kw = String(out.keywords);
     const resIdx = kw.search(/RESOURCES REQUIRED|Resources Required|RESOURCES:/i);
@@ -462,7 +470,9 @@ function extractSection(text, keywords, stopHeaders, options = {}) {
   const firstLineOnly = !!options.firstLineOnly;
   
   for (const kw of keywords) {
+    // Escape keywords for regex
     const escapedKw = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Improved regex: look for keyword, then capture everything until a stop header OR a significant block of uppercase text
     const stopPattern = stopHeaders.map(h => h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
     const regex = new RegExp(`${escapedKw}[:\\s\\n]+(.*?)(?=\\n(?:${stopPattern})|$)`, 'is');
     const match = text.match(regex);
@@ -501,61 +511,65 @@ OUTPUT STRICT JSON (preserve this exact structure):
 {
   "topic": "Lesson topic",
   "objectives": "ONE clear learning objective",
-  "success_criteria": "\\nAll students will...\\nMost students will...",
+  "success_criteria": "Differentiated outcomes:\\nAll students will...\\nMost students will...",
   "keywords": "comma-separated list",
   "skills": "comma-separated list only skill names",
   "links_subjects": "Cross-curricular connections only subject names",
   "uae_link": "Relevant UAE context (local examples, culture, or environment)",
 
-  "engage_content": "\\n• Hook description (e.g., 'Show image/video of...')\\n• Think-Pair-Share sequence:\\n  - Individual think (1 min): [prompt]\\n  - Pair discussion (2 min): [prompt]\\n  - Share out (2 min): [prompt]\\n• Questions (each on new line):\\n  • Question 1\\n  • Question 2\\n  • Question 3\\n• Expected misconception to address",  
+  "engage_content": "\\n• Hook description (e.g., 'Show image/video of...')\\n• Think-Pair-Share sequence:\\n  - Individual think (1 min): [prompt]\\n  - Pair discussion (2 min): [prompt]\\n  - Share out (2 min): [prompt]\\n• Questions (each on new line):\\n  • Question 1\\n  • Question 2\\n  • Question 3\\n• Expected misconception to address",
   
-  "explore_content": "\\nMaterials: [list]\\nProcedure:\\nStep 1: [action]\\nStep 2: [action]\\nGuiding questions with model answers:\\n• Question text\\n  → Expected answer/observation\\n• Next question\\n  → Expected answer\\nDifferentiation: [notes if present]",  
+  "explore_content": "\\nMaterials: [list]\\nProcedure:\\nStep 1: [action]\\nStep 2: [action]\\nGuiding questions with model answers:\\n• Question text\\n  → Expected answer/observation\\n• Next question\\n  → Expected answer\\nDifferentiation: [notes if present]",
   
-  "explain_content": "\\nStep 1: [Introduce key concept with concrete example]\\nStep 2: [Demonstration/modeling with think-aloud]\\nStep 3: [Guided practice example with solution]\\nStep 4: [Address common misconception]\\nWorked example: [Full demonstration]\\nMisconception check:\\n• 'Student might think...' → Correction with evidence",  
+  "explain_content": "\\nStep 1: [Introduce key concept with concrete example]\\nStep 2: [Demonstration/modeling with think-aloud]\\nStep 3: [Guided practice example with solution]\\nStep 4: [Address common misconception]\\nWorked example: [Full demonstration]\\nMisconception check:\\n• 'Student might think...' → Correction with evidence",
   
-  "elaborate_content": "\\nUPPER ABILITY:\\n[Full task description]\\n• Requirements:\\n  - Requirement 1\\n  - Requirement 2\\n\\nMIDDLE ABILITY:\\n[Full task description]\\n• Guidance:\\n  Step 1: [action]\\n  Step 2: [action]\\n\\nLOWER ABILITY:\\n[Scaffolded task]\\n• Steps:\\n  1. [Action]\\n  2. [Action]",  
+  "elaborate_content": "\\nUPPER ABILITY:\\n[Full task description]\\n• Requirements:\\n  - Requirement 1\\n  - Requirement 2\\n\\nMIDDLE ABILITY:\\n[Full task description]\\n• Guidance:\\n  Step 1: [action]\\n  Step 2: [action]\\n\\nLOWER ABILITY:\\n[Scaffolded task]\\n• Steps:\\n  1. [Action]\\n  2. [Action]",
   
-  "evaluate_content": "\\nAssessment tasks with mark scheme or success indicators\\n• Task 1: [description] (X marks)\\n• Task 2: [description]\\n\\nInclude self/peer assessment prompts if present",  
+  "evaluate_content": "\\nUPPER ABILITY:\\n[Synthesis task]\\n• Success criteria:\\n  - Criterion 1\\n  - Criterion 2\\n\\nMIDDLE ABILITY:\\n[Practice problems]\\n• Problem 1: [full question]\\n• Problem 2: [full question]\\n\\nLOWER ABILITY:\\n[Scaffolded task]\\n• Step 1: [instruction]\\n• Step 2: [instruction]",
   
-  "plenary_content": "\\nExit ticket or reflection:\\n• Question 1\\n• Question 2\\n• Question 3\\nIf present in the lesson, add '3-2-1' reflection or similar structure."
+  "plenary_content": "\\n• Question 1 (DOK2)\\n• Question 2 (DOK3)\\n• Question 3 (DOK4)\\n\\nKey discussion point: [brief note]"
 }
 
-Use the JSON keys exactly as above and do not add new top-level keys.
+IMPORTANT:
+- DO NOT invent content not implied by the original plan
+- Preserve ALL original examples, questions, and activities
+- UAE link must reflect subject relevance (e.g., Science: UAE environment; History: UAE heritage; Math: UAE architecture proportions)
+- Keep language practical and teacher-ready
 `;
 
-  const completion = await groq.chat.completions.create({
-    model: 'llama-3.1-8b-instant',
-    messages: [
-      { role: 'system', content: 'You are a precise JSON generator.' },
-      { role: 'user', content: prompt }
-    ],
-    temperature: 0.4,
-    max_tokens: 2500
-  });
-
-  let jsonText = completion.choices[0]?.message?.content?.trim() || '';
-  const jsonMatch = jsonText.match(/\{[\s\S]*\}$/);
-  if (jsonMatch) {
-    jsonText = jsonMatch[0];
-  }
-
-  let parsed = {};
   try {
-    parsed = JSON.parse(jsonText);
-  } catch (e) {
-    console.log('Failed to parse AI JSON, falling back to basicData:', e.message);
-    return basicData;
+    const response = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    });
+
+    let result = JSON.parse(response.choices[0].message.content);
+    
+    // Sanitize: flatten objects/arrays + clean line breaks
+    Object.keys(result).forEach(key => {
+      if (result[key] && typeof result[key] === 'object') {
+        if (Array.isArray(result[key])) {
+          result[key] = result[key].join(', ');
+        } else {
+          result[key] = Object.entries(result[key])
+            .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`)
+            .join('\\n');
+        }
+      }
+      if (typeof result[key] === 'string') {
+        result[key] = result[key]
+          .replace(/\n{3,}/g, '\\n\\n')
+          .replace(/\\n/g, '\n')
+          .trim();
+      }
+    });
+
+    return result;
+  } catch (error) {
+    console.log('AI enhancement failed:', error.message);
+    return basicData; // Fallback to extracted data
   }
-
-  Object.keys(basicData).forEach(key => {
-    if (parsed[key] === undefined || parsed[key] === null || parsed[key] === '') {
-      parsed[key] = basicData[key];
-    }
-  });
-
-  return parsed;
 }
 
-app.listen(PORT, () => {
-  console.log(`🚀 Base44 Local API running on http://localhost:${PORT}`);
-});
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Base44 Local API running on http://localhost:${PORT}`));
