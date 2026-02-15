@@ -35,8 +35,8 @@ export default function Create() {
     
     setIsSaving(true);
     try {
-      // Generate PowerPoint like Base44 did
-      const response = await fetch('http://localhost:3001/api/generate-ppt', {
+      const apiBase = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+      const response = await fetch(`${apiBase}/api/generate-ppt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(lessonData)
@@ -45,10 +45,10 @@ export default function Create() {
       const result = await response.json();
       
       if (result.success) {
-        // Trigger download
+        const origin = apiBase || window.location.origin;
         const downloadUrl = (result.downloadUrl && result.downloadUrl.startsWith('http'))
           ? result.downloadUrl
-          : `http://localhost:3001${result.downloadUrl || ''}`;
+          : `${origin}${result.downloadUrl || ''}`;
         const link = document.createElement('a');
         link.href = downloadUrl;
         link.download = result.filename;
@@ -248,3 +248,4 @@ export default function Create() {
     </div>
   );
 }
+
