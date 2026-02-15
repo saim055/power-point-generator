@@ -501,10 +501,10 @@ OUTPUT STRICT JSON (preserve this exact structure):
 {
   "topic": "Lesson topic",
   "objectives": "ONE clear learning objective",
-  "success_criteria": "Differentiated outcomes:\\nAll students will...\\nMost students will...",
+  "success_criteria": "\\nAll students will...\\nMost students will...",
   "keywords": "comma-separated list",
-  "skills": "comma-separated list",
-  "links_subjects": "Cross-curricular connections",
+  "skills": "comma-separated list only skill names",
+  "links_subjects": "Cross-curricular connections only subject names",
   "uae_link": "Relevant UAE context (local examples, culture, or environment)",
 
   "engage_content": "\\n• Hook description (e.g., 'Show image/video of...')\\n• Think-Pair-Share sequence:\\n  - Individual think (1 min): [prompt]\\n  - Pair discussion (2 min): [prompt]\\n  - Share out (2 min): [prompt]\\n• Questions (each on new line):\\n  • Question 1\\n  • Question 2\\n  • Question 3\\n• Expected misconception to address",  
